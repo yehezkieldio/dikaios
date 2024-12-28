@@ -2,6 +2,7 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
+import { invoke } from "@tauri-apps/api/core";
 import { ArrowLeft } from "lucide-react";
 import { useState } from "react";
 
@@ -14,8 +15,8 @@ type NetworkInfo = {
     hostmin: string;
     hostmax: string;
     hosts: number;
-    ipClass: string;
-    isPrivate: boolean;
+    ip_class: string;
+    is_private: boolean;
 };
 
 const IpCalculator = () => {
@@ -23,88 +24,36 @@ const IpCalculator = () => {
     const [networkBits, setNetworkBits] = useState("");
     const [result, setResult] = useState<NetworkInfo>();
 
-    const calculateNetworkInfo = () => {
+    const calculateNetworkInfo = async () => {
         if (!ipAddress || !networkBits) {
             alert("Please enter both IP address and network bits.");
             return;
         }
 
         try {
-            const info = parseAndCalculate(ipAddress, networkBits);
-            setResult(info);
+            const response = await invoke<{ info: NetworkInfo | null; error: string | null }>(
+                "calculate_network_info",
+                {
+                    input: {
+                        ip_address: ipAddress,
+                        network_bits: networkBits,
+                    },
+                },
+            );
+
+            if (response.error) {
+                alert(response.error);
+                return;
+            }
+
+            if (response.info) {
+                setResult(response.info);
+            }
         } catch (error) {
             if (error instanceof Error) {
                 alert(error.message);
             }
         }
-    };
-
-    const parseAndCalculate = (ip: string, bits: string) => {
-        // Validate inputs
-        const maskBits = Number.parseInt(bits, 10);
-        if (Number.isNaN(maskBits) || maskBits < 0 || maskBits > 32) {
-            throw new Error("Invalid network bits (must be between 0 and 32)");
-        }
-
-        const ipParts = ip.split(".");
-        if (ipParts.length !== 4) {
-            throw new Error("Invalid IP address format");
-        }
-
-        const ipNums = ipParts.map((part) => {
-            const num = Number.parseInt(part, 10);
-            if (Number.isNaN(num) || num < 0 || num > 255) {
-                throw new Error("Invalid IP address numbers");
-            }
-            return num;
-        });
-
-        // Calculate network details
-        const ipInt = (ipNums[0] << 24) | (ipNums[1] << 16) | (ipNums[2] << 8) | ipNums[3];
-        const maskInt = (-1 << (32 - maskBits)) >>> 0;
-        const wildcardInt = ~maskInt >>> 0;
-        const networkInt = (ipInt & maskInt) >>> 0;
-        const broadcastInt = (networkInt | wildcardInt) >>> 0;
-        const hostminInt = networkInt + 1;
-        const hostmaxInt = broadcastInt - 1;
-        const numHosts = 2 ** (32 - maskBits) - 2;
-
-        // Determine IP class and private status
-        const ipClass = getIpClass(ipNums[0]);
-        const isPrivate = checkIfPrivate(ipNums);
-
-        return {
-            address: ipToString(ipInt),
-            netmask: ipToString(maskInt),
-            wildcard: ipToString(wildcardInt),
-            network: ipToString(networkInt),
-            broadcast: ipToString(broadcastInt),
-            hostmin: ipToString(hostminInt),
-            hostmax: ipToString(hostmaxInt),
-            hosts: numHosts,
-            ipClass,
-            isPrivate,
-        };
-    };
-
-    const ipToString = (ipInt: number): string => {
-        return [(ipInt >>> 24) & 255, (ipInt >>> 16) & 255, (ipInt >>> 8) & 255, ipInt & 255].join(".");
-    };
-
-    const getIpClass = (firstOctet: number): string => {
-        if (firstOctet < 128) return "A";
-        if (firstOctet < 192) return "B";
-        if (firstOctet < 224) return "C";
-        if (firstOctet < 240) return "D";
-        return "E";
-    };
-
-    const checkIfPrivate = (ipNums: number[]): boolean => {
-        return (
-            ipNums[0] === 10 ||
-            (ipNums[0] === 172 && ipNums[1] >= 16 && ipNums[1] <= 31) ||
-            (ipNums[0] === 192 && ipNums[1] === 168)
-        );
     };
 
     return (
@@ -178,10 +127,10 @@ const IpCalculator = () => {
                                     <span>{result.hosts.toLocaleString()}</span>
 
                                     <span className="font-medium">IP Class:</span>
-                                    <span>{result.ipClass}</span>
+                                    <span>{result.ip_class}</span>
 
                                     <span className="font-medium">Type:</span>
-                                    <span>{result.isPrivate ? "Private" : "Public"}</span>
+                                    <span>{result.is_private ? "Private" : "Public"}</span>
                                 </div>
                             </div>
                         ) : (
