@@ -2,6 +2,7 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn, randomId } from "@/lib/utils";
+import { invoke } from "@tauri-apps/api/core";
 import { ArrowLeft } from "lucide-react";
 import { useState } from "react";
 
@@ -10,54 +11,30 @@ const IpRangeCalculator = () => {
     const [subnetMask, setSubnetMask] = useState("");
     const [result, setResult] = useState<string[]>([]);
 
-    const calculateValidIPs = () => {
+    const calculateValidIPs = async () => {
         if (!endOfIP || !subnetMask) {
             alert("Please enter both end of IP and subnet mask.");
             return;
         }
 
         try {
-            const [startIP, maskBits] = parseInput(endOfIP, subnetMask);
-            const ipList = getValidIPs(startIP, maskBits);
-            setResult(ipList);
+            const response = await invoke<{ valid_ips: string[]; error: string | null }>("calculate_ip_range", {
+                input: {
+                    ip_address: endOfIP,
+                    subnet_mask: subnetMask,
+                },
+            });
+
+            if (response.error) {
+                alert(response.error);
+                return;
+            }
+
+            setResult(response.valid_ips);
         } catch (_error) {
             console.log(_error);
             alert("Invalid input. Please provide correct values.");
         }
-    };
-
-    const parseInput = (endOfIP: string, subnetMask: string) => {
-        const maskBits = Number.parseInt(subnetMask, 10);
-
-        if (Number.isNaN(maskBits) || maskBits < 0 || maskBits > 32) {
-            throw new Error("Invalid subnet mask.");
-        }
-
-        const ipParts = endOfIP.split(".");
-        if (ipParts.length !== 4 || ipParts.some((part) => Number.isNaN(Number.parseInt(part)) && part !== "")) {
-            throw new Error("Invalid IP address format.");
-        }
-
-        const baseIP = ipParts.map((part) => (part === "" ? "0" : part)).join(".");
-        return [baseIP, maskBits] as const;
-    };
-
-    const getValidIPs = (startIP: string, maskBits: number): string[] => {
-        const ipParts = startIP.split(".").map(Number);
-        const ipAsInt = (ipParts[0] << 24) | (ipParts[1] << 16) | (ipParts[2] << 8) | ipParts[3];
-
-        const hostBits = 32 - maskBits;
-        const subnetSize = 1 << hostBits;
-
-        const networkAddress = ipAsInt & ~(subnetSize - 1);
-        const broadcastAddress = networkAddress | (subnetSize - 1);
-
-        const validIPs = [];
-        for (let ip = networkAddress + 1; ip < broadcastAddress; ip++) {
-            validIPs.push([(ip >> 24) & 255, (ip >> 16) & 255, (ip >> 8) & 255, ip & 255].join("."));
-        }
-
-        return validIPs;
     };
 
     return (
