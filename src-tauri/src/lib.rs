@@ -38,6 +38,41 @@ struct IpCalculatorResult {
     error: Option<String>,
 }
 
+#[derive(Serialize)]
+pub struct SubnetMaskReference {
+    cidr: String,
+    total_hosts: u32,
+    usable_hosts: u32,
+    subnet_mask: String,
+}
+
+#[tauri::command]
+fn generate_subnet_references() -> Vec<SubnetMaskReference> {
+    let mut references = Vec::new();
+
+    for prefix in (16..=31).rev() {
+        let total_hosts = 1u32 << (32 - prefix);
+        let usable_hosts = if prefix >= 31 { total_hosts } else { total_hosts - 2 };
+
+        let mask = !((1u32 << (32 - prefix)) - 1);
+        let subnet_mask = format!("{}.{}.{}.{}",
+            (mask >> 24) & 255,
+            (mask >> 16) & 255,
+            (mask >> 8) & 255,
+            mask & 255
+        );
+
+        references.push(SubnetMaskReference {
+            cidr: format!("/{}", prefix),
+            total_hosts,
+            usable_hosts,
+            subnet_mask,
+        });
+    }
+
+    references
+}
+
 #[tauri::command]
 fn calculate_ip_range(input: IpInput) -> IpResult {
     match calculate_ips(&input.ip_address, &input.subnet_mask) {
@@ -200,7 +235,7 @@ fn calculate_ip_info(ip: &str, bits: &str) -> Result<NetworkInfo, String> {
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
-        .invoke_handler(tauri::generate_handler![calculate_ip_range, calculate_network_info])
+        .invoke_handler(tauri::generate_handler![calculate_ip_range, calculate_network_info, generate_subnet_references])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
