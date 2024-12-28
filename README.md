@@ -1,7 +1,16 @@
-# Tauri + React + Typescript
+<div align="center">
 
-This template should help get you started developing with Tauri, React and Typescript in Vite.
+<img src="public/android-chrome-192x192.png" align="center" width="120px" height="120px">
 
-## Recommended IDE Setup
+<h3>Dikaios</h3>
+<p>A comprehensive desktop suite of IP address management tools.<p>
 
-- [VS Code](https://code.visualstudio.com/) + [Tauri](https://marketplace.visualstudio.com/items?itemName=tauri-apps.tauri-vscode) + [rust-analyzer](https://marketplace.visualstudio.com/items?itemName=rust-lang.rust-analyzer)
+</div>
+
+---
+
+**Dikaios** is a comprehensive desktop suite of IP address management tools. It is designed to help network administrators manage their IP address space more effectively. It provides a simple and intuitive user interface for calculate ip address, subnet mask, broadcast address, and more.
+
+In ancient Greek, δίκαιος (dikaios) is an adjective that means "just" or "righteous."
+
+---
