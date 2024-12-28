@@ -1,5 +1,6 @@
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+
 const HomePage = () => {
     return (
         <main className="flex flex-col min-h-screen">
@@ -8,7 +9,15 @@ const HomePage = () => {
                     <h1 className="text-4xl font-bold tracking-wider bg-gradient-to-r from-[#EFF2FF] to-[#BCD2FA] text-transparent bg-clip-text">
                         DIKAIOS
                     </h1>
-                    <p className="mt-1 text-sm text-right font-light text-foreground">@yehezkieldio</p>
+                    <p className="mt-1 text-sm text-right font-light text-foreground">
+                        <a
+                            href="https://github.com/yehezkieldio/yehezkieldio"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                        >
+                            @yehezkieldio
+                        </a>
+                    </p>
                 </div>
                 <div className="flex items-center flex-col gap-4">
                     <a
