@@ -1,5 +1,6 @@
-import { buttonVariants } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { invoke } from "@tauri-apps/api/core";
 
 const HomePage = () => {
     return (
@@ -56,6 +57,20 @@ const HomePage = () => {
                     >
                         IP Range Calculator
                     </a>
+                    <Button
+                        onClick={async () => {
+                            try {
+                                await invoke("exit_app");
+                            } catch (error) {
+                                console.error("Failed to exit app:", error);
+                            }
+                        }}
+                        variant="outline"
+                        size="sm"
+                        className="w-[200px] px-4"
+                    >
+                        Exit
+                    </Button>
                 </div>
             </div>
             <footer className="mb-8 text-center font-light text-sm text-muted-foreground">
