@@ -5,11 +5,14 @@
 <h3>Dikaios</h3>
 <p>A comprehensive desktop suite of IP address management tools.<p>
 
+[![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/yehezkieldio/dikaios/publish.yml?style=flat&logo=tauri&label=Build)](https://github.com/yehezkieldio/dikaios/actions)
+[![GitHub Release Status](https://img.shields.io/github/v/release/yehezkieldio/dikaios?style=flat&logo=tauri&label=Release)](https://github.com/yehezkieldio/dikaios/releases)
+
 </div>
 
 ---
 
-**Dikaios** is a comprehensive desktop suite of IP address management tools. It is designed to help network administrators manage their IP address space more effectively. It provides a simple and intuitive user interface for calculate ip address, subnet mask, broadcast address, and more.
+**Dikaios** is a experimental project to build a comprehensive desktop suite of IP address management tools. It is designed to help network administrators manage their IP address space more effectively. It provides a simple and intuitive user interface for calculate ip address, subnet mask, broadcast address, and more.
 
 In ancient Greek, δίκαιος (dikaios) is an adjective that means "just" or "righteous."
 

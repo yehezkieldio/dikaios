@@ -51,10 +51,10 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        releaseName: 'App v__VERSION__'
+        releaseName: 'dikaios v__VERSION__'
         releaseBody: 'See the assets to download this version and install.'
         releaseDraft: true
-        tagName: '${GITHUB_REF#refs/tags/}'
+        tagName: ${{ github.ref_name }}
         prerelease: false
         args: ${{ matrix.args }}
 
