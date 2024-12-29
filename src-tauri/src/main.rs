@@ -3,5 +3,6 @@
 
 
 fn main() {
+    let _ = fix_path_env::fix();
     dikaios_lib::run()
 }
