@@ -22,7 +22,7 @@ In ancient Greek, δίκαιος (dikaios) is an adjective that means "just" or 
 
 ### Prerequisites
 
--   [Bun](https://bun.sh/) >= 1.1.42 _or/and Node.js >= 23.5.0_
+-   [Bun](https://bun.sh/) >= 1.1.42 _or/and_ [Node.js](https://nodejs.org/) >= 23.5.0
 -   [Rust](https://www.rust-lang.org/) >= 1.85.0-nightly
 
 Tauri requires various system dependencies to build the application. You can find the list of dependencies and its installation instructions in the [Tauri documentation](https://v2.tauri.app/start/prerequisites/#system-dependencies).
