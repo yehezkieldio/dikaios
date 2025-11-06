@@ -7,6 +7,8 @@ const Home = lazy(() => import("@/pages/Home"));
 const SubntMaskReference = lazy(() => import("@/pages/SubnetMaskReference"));
 const IpCalculator = lazy(() => import("@/pages/IpCalculator"));
 const IpRangeCalculator = lazy(() => import("@/pages/IpRangeCalculator"));
+const VlsmCalculator = lazy(() => import("@/pages/VlsmCalculator"));
+const VlanAllocationCalculator = lazy(() => import("@/pages/VlanAllocationCalculator"));
 
 const routes: RouteObject[] = [
     {
@@ -42,6 +44,22 @@ const routes: RouteObject[] = [
                 element: (
                     <Suspense fallback={<SuspenseLayout />}>
                         <IpRangeCalculator />
+                    </Suspense>
+                ),
+            },
+            {
+                path: "/vlsm-calculator",
+                element: (
+                    <Suspense fallback={<SuspenseLayout />}>
+                        <VlsmCalculator />
+                    </Suspense>
+                ),
+            },
+            {
+                path: "/vlan-allocation-calculator",
+                element: (
+                    <Suspense fallback={<SuspenseLayout />}>
+                        <VlanAllocationCalculator />
                     </Suspense>
                 ),
             },
