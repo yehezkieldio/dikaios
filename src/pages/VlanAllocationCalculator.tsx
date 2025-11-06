@@ -61,8 +61,8 @@ const VlanAllocationCalculator = () => {
         }
     };
 
-    const removeVlan = (index: number) => {
-        setVlanConfigs(vlanConfigs.filter((_, i) => i !== index));
+    const removeVlan = (vlanId: number) => {
+        setVlanConfigs(vlanConfigs.filter((vlan) => vlan.vlan_id !== vlanId));
     };
 
     const calculateVlan = async () => {
@@ -179,7 +179,7 @@ const VlanAllocationCalculator = () => {
                                 </Button>
                             </div>
                             <div className="mt-4 space-y-2 max-h-64 overflow-y-auto">
-                                {vlanConfigs.map((vlan, index) => (
+                                {vlanConfigs.map((vlan) => (
                                     <div
                                         key={`vlan-${vlan.vlan_id}`}
                                         className="flex items-center justify-between border p-2 rounded"
@@ -190,7 +190,7 @@ const VlanAllocationCalculator = () => {
                                             </div>
                                             <div className="text-muted-foreground">{vlan.required_hosts} hosts</div>
                                         </div>
-                                        <Button variant="ghost" size="sm" onClick={() => removeVlan(index)}>
+                                        <Button variant="ghost" size="sm" onClick={() => removeVlan(vlan.vlan_id)}>
                                             <Trash2 className="w-4 h-4 text-destructive" />
                                         </Button>
                                     </div>

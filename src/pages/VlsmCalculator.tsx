@@ -1,11 +1,10 @@
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { cn } from "@/lib/utils";
+import { cn, randomId } from "@/lib/utils";
 import { invoke } from "@tauri-apps/api/core";
 import { ArrowLeft, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
-import { uuidv7 } from "uuidv7";
 
 type VlsmSubnet = {
     network: string;
@@ -32,7 +31,7 @@ const VlsmCalculator = () => {
 
     const addRequirement = () => {
         if (newRequirement && Number(newRequirement) > 0) {
-            setHostRequirements([...hostRequirements, { id: uuidv7(), hosts: Number(newRequirement) }]);
+            setHostRequirements([...hostRequirements, { id: randomId(), hosts: Number(newRequirement) }]);
             setNewRequirement("");
         }
     };

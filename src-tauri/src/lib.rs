@@ -353,6 +353,7 @@ fn calculate_vlsm_subnets(base_network: &str, base_cidr: u32, host_requirements:
 
         // Calculate subnet details
         let netmask = !((1u32 << host_bits) - 1);
+        // Ensure current_ip is properly aligned to subnet boundary
         let network = current_ip & netmask;
         let broadcast = network | !netmask;
         let first_host = network + 1;
