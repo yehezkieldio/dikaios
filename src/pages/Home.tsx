@@ -57,6 +57,30 @@ const HomePage = () => {
                     >
                         IP Range Calculator
                     </a>
+                    <a
+                        className={cn(
+                            buttonVariants({
+                                variant: "outline",
+                                size: "sm",
+                            }),
+                            "w-[200px] px-4",
+                        )}
+                        href="/vlsm-calculator"
+                    >
+                        VLSM Calculator
+                    </a>
+                    <a
+                        className={cn(
+                            buttonVariants({
+                                variant: "outline",
+                                size: "sm",
+                            }),
+                            "w-[200px] px-4",
+                        )}
+                        href="/vlan-allocation-calculator"
+                    >
+                        VLAN Allocation Calculator
+                    </a>
                     <Button
                         onClick={async () => {
                             try {
