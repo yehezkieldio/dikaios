@@ -9,6 +9,7 @@ const IpCalculator = lazy(() => import("@/pages/IpCalculator"));
 const IpRangeCalculator = lazy(() => import("@/pages/IpRangeCalculator"));
 const VlsmCalculator = lazy(() => import("@/pages/VlsmCalculator"));
 const VlanAllocationCalculator = lazy(() => import("@/pages/VlanAllocationCalculator"));
+const WirelessNetworkSetup = lazy(() => import("@/pages/WirelessNetworkSetup"));
 
 const routes: RouteObject[] = [
     {
@@ -60,6 +61,14 @@ const routes: RouteObject[] = [
                 element: (
                     <Suspense fallback={<SuspenseLayout />}>
                         <VlanAllocationCalculator />
+                    </Suspense>
+                ),
+            },
+            {
+                path: "/wireless-network-setup",
+                element: (
+                    <Suspense fallback={<SuspenseLayout />}>
+                        <WirelessNetworkSetup />
                     </Suspense>
                 ),
             },

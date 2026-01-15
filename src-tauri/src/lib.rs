@@ -106,6 +106,40 @@ struct VlanResult {
     error: Option<String>,
 }
 
+#[derive(Deserialize)]
+struct WirelessNetworkInput {
+    base_network: Option<String>,
+    base_cidr: Option<u32>,
+    auto_generate: bool,
+    ssid: String,
+    wpa_password: String,
+    router_hostname: String,
+    ap_hostname: String,
+}
+
+#[derive(Serialize)]
+struct WirelessNetworkConfig {
+    network: String,
+    cidr: u32,
+    subnet_mask: String,
+    router_ip: String,
+    ap_ip: String,
+    dhcp_start: String,
+    dhcp_end: String,
+    broadcast: String,
+    usable_hosts: u32,
+    ssid: String,
+    router_commands: String,
+    ap_commands: String,
+    setup_steps: Vec<String>,
+}
+
+#[derive(Serialize)]
+struct WirelessNetworkResult {
+    config: Option<WirelessNetworkConfig>,
+    error: Option<String>,
+}
+
 #[tauri::command]
 fn generate_subnet_references() -> Vec<SubnetMaskReference> {
     let mut references = Vec::new();
@@ -543,6 +577,225 @@ fn calculate_vlans(base_network: &str, base_cidr: u32, vlan_configs: &[VlanConfi
 }
 
 #[tauri::command]
+fn configure_wireless_network(input: WirelessNetworkInput) -> WirelessNetworkResult {
+    match generate_wireless_config(input) {
+        Ok(config) => WirelessNetworkResult {
+            config: Some(config),
+            error: None,
+        },
+        Err(e) => WirelessNetworkResult {
+            config: None,
+            error: Some(e),
+        },
+    }
+}
+
+fn generate_wireless_config(input: WirelessNetworkInput) -> Result<WirelessNetworkConfig, String> {
+    // Generate or use provided network
+    let (base_network, base_cidr) = if input.auto_generate {
+        // Use a common private network for WLAN
+        ("192.168.1.0".to_string(), 24u32)
+    } else {
+        let network = input.base_network.ok_or("Base network is required when not auto-generating")?;
+        let cidr = input.base_cidr.ok_or("Base CIDR is required when not auto-generating")?;
+        (network, cidr)
+    };
+
+    // Parse network address
+    let ip_parts: Vec<&str> = base_network.split('.').collect();
+    if ip_parts.len() != 4 {
+        return Err("Invalid base network address format".to_string());
+    }
+
+    let mut ip_nums = [0u32; 4];
+    for (i, part) in ip_parts.iter().enumerate() {
+        ip_nums[i] = part.parse()
+            .map_err(|_| "Invalid IP address number")?;
+        if ip_nums[i] > 255 {
+            return Err("IP address numbers must be between 0 and 255".to_string());
+        }
+    }
+
+    let network_int = (ip_nums[0] << 24) | (ip_nums[1] << 16) | (ip_nums[2] << 8) | ip_nums[3];
+    
+    // Calculate subnet details
+    let host_bits = 32 - base_cidr;
+    let subnet_size = 1u32 << host_bits;
+    let netmask = !((1u32 << host_bits) - 1);
+    let broadcast = network_int | ((1u32 << host_bits) - 1);
+    
+    // Assign IPs
+    let router_ip = network_int + 1;
+    let ap_ip = network_int + 2;
+    let dhcp_start = network_int + 10;
+    let dhcp_end = broadcast - 1;
+    let usable_hosts = subnet_size - 2;
+
+    let subnet_mask = format!("{}.{}.{}.{}",
+        (netmask >> 24) & 255,
+        (netmask >> 16) & 255,
+        (netmask >> 8) & 255,
+        netmask & 255
+    );
+
+    let router_ip_str = format!("{}.{}.{}.{}",
+        (router_ip >> 24) & 255,
+        (router_ip >> 16) & 255,
+        (router_ip >> 8) & 255,
+        router_ip & 255
+    );
+
+    let ap_ip_str = format!("{}.{}.{}.{}",
+        (ap_ip >> 24) & 255,
+        (ap_ip >> 16) & 255,
+        (ap_ip >> 8) & 255,
+        ap_ip & 255
+    );
+
+    let dhcp_start_str = format!("{}.{}.{}.{}",
+        (dhcp_start >> 24) & 255,
+        (dhcp_start >> 16) & 255,
+        (dhcp_start >> 8) & 255,
+        dhcp_start & 255
+    );
+
+    let dhcp_end_str = format!("{}.{}.{}.{}",
+        (dhcp_end >> 24) & 255,
+        (dhcp_end >> 16) & 255,
+        (dhcp_end >> 8) & 255,
+        dhcp_end & 255
+    );
+
+    let broadcast_str = format!("{}.{}.{}.{}",
+        (broadcast >> 24) & 255,
+        (broadcast >> 16) & 255,
+        (broadcast >> 8) & 255,
+        broadcast & 255
+    );
+
+    // Generate Router Commands (typical wireless router with DHCP)
+    let router_commands = format!(
+r#"! Wireless Router Configuration for {}
+enable
+configure terminal
+hostname {}
+!
+! Configure Wireless Interface (GigabitEthernet0/0/0 or similar)
+interface GigabitEthernet0/0/0
+ip address {} {}
+no shutdown
+exit
+!
+! Configure DHCP Pool
+ip dhcp pool WLAN-POOL
+network {} {}
+default-router {}
+dns-server 8.8.8.8 8.8.4.4
+exit
+!
+! Exclude router and AP IPs from DHCP
+ip dhcp excluded-address {} {}
+!
+! Configure Wireless Settings (if supported in PT)
+! Note: In Cisco Packet Tracer, wireless settings might be configured via GUI
+! SSID: {}
+! Security: WPA2-PSK
+! Password: {}
+!
+! Save configuration
+end
+write memory
+exit"#,
+        input.ssid,
+        input.router_hostname,
+        router_ip_str, subnet_mask,
+        base_network, subnet_mask,
+        router_ip_str,
+        router_ip_str, ap_ip_str,
+        input.ssid,
+        input.wpa_password
+    );
+
+    // Generate Access Point Commands
+    let ap_commands = format!(
+r#"! Wireless Access Point Configuration for {}
+enable
+configure terminal
+hostname {}
+!
+! Configure Access Point Interface
+interface GigabitEthernet0/0
+ip address {} {}
+no shutdown
+exit
+!
+! Set default gateway to wireless router
+ip default-gateway {}
+!
+! Configure Wireless Settings (typically done via GUI in Packet Tracer)
+! SSID: {}
+! Security Mode: WPA2-PSK
+! Password: {}
+! 
+! Steps to configure wireless in Packet Tracer GUI:
+! 1. Click on the Access Point
+! 2. Go to Config tab
+! 3. Select Port 1 (or wireless interface)
+! 4. Set SSID: {}
+! 5. Set Authentication: WPA2-PSK
+! 6. Set PSK Pass Phrase: {}
+! 7. Select the appropriate radio band (2.4GHz or 5GHz)
+!
+! Save configuration
+end
+write memory
+exit"#,
+        input.ssid,
+        input.ap_hostname,
+        ap_ip_str, subnet_mask,
+        router_ip_str,
+        input.ssid,
+        input.wpa_password,
+        input.ssid,
+        input.wpa_password
+    );
+
+    // Generate setup steps
+    let setup_steps = vec![
+        "1. Add a Wireless Router to your Packet Tracer workspace".to_string(),
+        "2. Add an Access Point (if separate from router) to your workspace".to_string(),
+        "3. Connect the Access Point to the Wireless Router using a copper straight-through cable".to_string(),
+        format!("4. Click on the Wireless Router and apply the router configuration commands"),
+        format!("5. Click on the Access Point and apply the AP configuration commands"),
+        "6. Configure wireless settings via the GUI (Config tab > Port 1):".to_string(),
+        format!("   - Set SSID to: {}", input.ssid),
+        "   - Set Authentication to: WPA2-PSK".to_string(),
+        format!("   - Set PSK Pass Phrase to: {}", input.wpa_password),
+        "7. Add wireless devices (laptops, smartphones) to the workspace".to_string(),
+        "8. Click on each wireless device, go to Desktop > PC Wireless".to_string(),
+        format!("9. Connect to SSID: {} using the password", input.ssid),
+        "10. Verify connectivity by pinging the router or other devices".to_string(),
+        "11. Devices should automatically receive IP addresses via DHCP".to_string(),
+    ];
+
+    Ok(WirelessNetworkConfig {
+        network: base_network,
+        cidr: base_cidr,
+        subnet_mask,
+        router_ip: router_ip_str,
+        ap_ip: ap_ip_str,
+        dhcp_start: dhcp_start_str,
+        dhcp_end: dhcp_end_str,
+        broadcast: broadcast_str,
+        usable_hosts,
+        ssid: input.ssid,
+        router_commands,
+        ap_commands,
+        setup_steps,
+    })
+}
+
+#[tauri::command]
 fn exit_app() {
     std::process::exit(0x0);
 }
@@ -557,6 +810,7 @@ pub fn run() {
             generate_subnet_references, 
             calculate_vlsm,
             calculate_vlan_allocation,
+            configure_wireless_network,
             exit_app
         ])
         .run(tauri::generate_context!())
