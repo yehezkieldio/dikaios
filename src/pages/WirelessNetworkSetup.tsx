@@ -247,8 +247,8 @@ const WirelessNetworkSetup = () => {
                                     <h3 className="text-lg font-semibold mb-4">Setup Steps</h3>
                                     <div className="border p-4 space-y-2 max-h-64 overflow-y-auto">
                                         <ol className="text-sm space-y-2">
-                                            {result.setup_steps.map((step, index) => (
-                                                <li key={`step-${index}`} className={step.startsWith("   ") ? "ml-4" : ""}>
+                                            {result.setup_steps.map((step) => (
+                                                <li key={step} className={step.startsWith("   ") ? "ml-4" : ""}>
                                                     {step}
                                                 </li>
                                             ))}
@@ -262,9 +262,7 @@ const WirelessNetworkSetup = () => {
                                         <Button
                                             variant="outline"
                                             size="sm"
-                                            onClick={() =>
-                                                copyToClipboard(result.router_commands, "Router commands")
-                                            }
+                                            onClick={() => copyToClipboard(result.router_commands, "Router commands")}
                                         >
                                             <Copy className="w-4 h-4 mr-2" />
                                             Copy
