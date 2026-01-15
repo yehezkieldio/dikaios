@@ -79,9 +79,13 @@ const WirelessNetworkSetup = () => {
         }
     };
 
-    const copyToClipboard = (text: string, type: string) => {
-        navigator.clipboard.writeText(text);
-        alert(`${type} copied to clipboard!`);
+    const copyToClipboard = async (text: string, type: string) => {
+        try {
+            await navigator.clipboard.writeText(text);
+            alert(`${type} copied to clipboard!`);
+        } catch (_error) {
+            alert(`Failed to copy ${type} to clipboard.`);
+        }
     };
 
     return (

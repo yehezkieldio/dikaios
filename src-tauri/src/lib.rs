@@ -680,7 +680,10 @@ enable
 configure terminal
 hostname {}
 !
-! Configure Wireless Interface (GigabitEthernet0/0/0 or similar)
+! Configure Wireless Interface
+! NOTE: Interface name may vary by device model in Packet Tracer
+! Common names: GigabitEthernet0/0/0, FastEthernet0/0, GigabitEthernet0/1
+! Adjust the interface name below to match your specific router model
 interface GigabitEthernet0/0/0
 ip address {} {}
 no shutdown
@@ -724,6 +727,9 @@ configure terminal
 hostname {}
 !
 ! Configure Access Point Interface
+! NOTE: Interface name may vary by device model in Packet Tracer
+! Common names: GigabitEthernet0/0, FastEthernet0/0, GigabitEthernet0/1
+! Adjust the interface name below to match your specific access point model
 interface GigabitEthernet0/0
 ip address {} {}
 no shutdown
@@ -765,17 +771,19 @@ exit"#,
         "1. Add a Wireless Router to your Packet Tracer workspace".to_string(),
         "2. Add an Access Point (if separate from router) to your workspace".to_string(),
         "3. Connect the Access Point to the Wireless Router using a copper straight-through cable".to_string(),
-        format!("4. Click on the Wireless Router and apply the router configuration commands"),
-        format!("5. Click on the Access Point and apply the AP configuration commands"),
-        "6. Configure wireless settings via the GUI (Config tab > Port 1):".to_string(),
+        "4. Click on the Wireless Router and open CLI or Config tab".to_string(),
+        "5. Apply the router configuration commands (adjust interface names if needed)".to_string(),
+        "6. Click on the Access Point and open CLI or Config tab".to_string(),
+        "7. Apply the AP configuration commands (adjust interface names if needed)".to_string(),
+        "8. Configure wireless settings via the GUI (Config tab > Port 1):".to_string(),
         format!("   - Set SSID to: {}", input.ssid),
         "   - Set Authentication to: WPA2-PSK".to_string(),
         format!("   - Set PSK Pass Phrase to: {}", input.wpa_password),
-        "7. Add wireless devices (laptops, smartphones) to the workspace".to_string(),
-        "8. Click on each wireless device, go to Desktop > PC Wireless".to_string(),
-        format!("9. Connect to SSID: {} using the password", input.ssid),
-        "10. Verify connectivity by pinging the router or other devices".to_string(),
-        "11. Devices should automatically receive IP addresses via DHCP".to_string(),
+        "9. Add wireless devices (laptops, smartphones) to the workspace".to_string(),
+        "10. Click on each wireless device, go to Desktop > PC Wireless".to_string(),
+        format!("11. Connect to SSID: {} using the password", input.ssid),
+        "12. Verify connectivity by pinging the router or other devices".to_string(),
+        "13. Devices should automatically receive IP addresses via DHCP".to_string(),
     ];
 
     Ok(WirelessNetworkConfig {
