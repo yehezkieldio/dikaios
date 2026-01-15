@@ -81,6 +81,18 @@ const HomePage = () => {
                     >
                         VLAN Allocation Calculator
                     </a>
+                    <a
+                        className={cn(
+                            buttonVariants({
+                                variant: "outline",
+                                size: "sm",
+                            }),
+                            "w-[200px] px-4",
+                        )}
+                        href="/wireless-network-setup"
+                    >
+                        Wireless Network Setup
+                    </a>
                     <Button
                         onClick={async () => {
                             try {
